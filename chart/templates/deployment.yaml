@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.Deployment.Name }}
+  namespace: {{ .Values.Namespace }}
+  {{- with .Values.Deployment.annotations }}
+  annotations:
+   {{- range $key, $value := . }}
+   {{- printf "%s: %s" $key (tpl $value $ | squote) | nindent 4 }}
+   {{- end }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.Deployment.Replicas }}
+  strategy:
+    type: {{ .Values.Deployment.Strategy }}
+  selector:
+    matchLabels:
+      app: {{ .Values.Deployment.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.Deployment.Name }}
+    spec:
+      containers:
+      - name: {{ .Values.Deployment.Name }}
+        image: "{{ .Values.Deployment.Image }}:{{ .Values.Deployment.Tag }}"
+        imagePullPolicy: {{ .Values.Deployment.imagePullPolicy | quote }}
+        command: [ "/bin/sh" ]
+        args: [ "-c" , "yarn install && rails s" ]
+        resources:
+{{ toYaml .Values.Deployment.resources | indent 10 }}
+        ports:
+        - containerPort: {{ .Values.Deployment.Port }}
+        volumeMounts:
+        - name: public
+          mountPath: /home/rails/app/public
+        env:
+          {{- range $name, $value := .Values.Deployment.env }}
+          - name: {{ $name }}
+            value: {{ $value | quote }}
+          {{- end }}
+        envFrom:
+         {{- range $secret := .Values.Secrets }}
+         - secretRef:
+            name: {{ $secret }}
+         {{- end }}
+         - secretRef:
+             name: "{{ .Values.Deployment.Name }}-secrets"
+      volumes:
+      - name: public
+        persistentVolumeClaim:
+          claimName: "academic-public-pvc"
+

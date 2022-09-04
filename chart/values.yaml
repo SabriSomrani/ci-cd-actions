@@ -1,0 +1,79 @@
+Namespace: ***********
+
+replicaCount: 3
+# Secret
+Secret:
+ SMTP_USER_NAME: ***********
+ SMTP_PASSWORD: ********
+ SMTP_URL: *******************
+ RAILS_MASTER_KEY: ****************
+ API_USERNAME: **************
+ API_PASSWORD: ***************
+ INTERCOM_APP_ID: *****************
+ INTERCOM_IDENTITY_VERIFICATION: ***************
+ MAILER_HOST: *****************
+ ROLLBAR_ACCESS_TOKEN: **************
+ WONDE_API_READ_TOKEN: **************
+Secrets:
+ database: "*******-database"
+ user: ***********
+# Deployment
+Deployment:
+  Name: *************
+  Image: ""
+  Tag: "latest"
+  imagePullPolicy: Always
+  Replicas: 1
+  Strategy: Recreate
+  Port: 3000
+  resources:
+   requests:
+    memory: 256Mi
+    cpu: 100m
+  env:
+   RAILS_ENV: staging
+   NODE_ENV: staging
+   RACK_ENV: staging
+   ACCEPT_TERMS: true
+   RAILS_SERVE_STATIC_FILES: true
+   SHOW_REPORTS_PAGE: true
+   GROVER_NO_SANDBOX: true
+   NEW_EXAMS_NOTIFICATIONS_ENABLED: true
+   SHOW_SUBJECT_RANKINGS_PAGE: true
+   WEB_CONCURRENCY: 4
+   SCHEDULE_NOTIFIER_ABOUT_NEW_RESULTS_AT: 8
+   COUNT_STATISTICS_TABLE: count_statistics
+# Service
+Service:
+ Name: "*************"
+ Type: "ClusterIP"
+ protocol: "TCP"
+ port: 3000
+ targetPort: 3000
+persistence:
+  storageClass: efs-sc
+  accessMode: ReadWriteMany
+  size: 1Gi
+# Ingress
+Ingress:
+ name: "academic-tracker"
+ annotations:  {
+  kubernetes.io/ingress.class: "alb",
+  alb.ingress.kubernetes.io/load-balancer-name: "***********",
+  alb.ingress.kubernetes.io/group.name: "****************",
+  alb.ingress.kubernetes.io/scheme: "internet-facing",
+  alb.ingress.kubernetes.io/target-type: "ip",
+  alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]',
+  alb.ingress.kubernetes.io/backend-protocol: "HTTP",
+  external-dns.alpha.kubernetes.io/hostname: "staging.*********************",
+ }
+ rules:
+  host: "staging.******************"
+  pathType: "Prefix"
+  path: "/"
+  backend:
+   service_name: "nginx"
+   service_port: "80"
+
+# hpa:
+

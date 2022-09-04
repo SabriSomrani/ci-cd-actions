@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.Ingress.name | quote }}
+  namespace: {{ .Values.Namespace | quote }}
+  {{- with .Values.Ingress.annotations }}
+  annotations:
+   {{- range $key, $value := . }}
+   {{- printf "%s: %s" $key (tpl $value $ | squote) | nindent 4 }}
+   {{- end }}
+  {{- end }}
+spec:
+  rules:
+    #- host: {{ .Values.Ingress.rules.host | quote}}
+    - http:
+        paths:
+          - pathType: {{ .Values.Ingress.rules.pathType }}
+            path: {{ .Values.Ingress.rules.path | quote}}
+            backend:
+              service:
+                name: {{ .Values.Ingress.rules.backend.service_name }}
+                port:
+                  number: {{int .Values.Ingress.rules.backend.service_port}}

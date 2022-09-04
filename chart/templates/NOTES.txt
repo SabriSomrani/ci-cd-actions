@@ -1,0 +1,2 @@
+Academic Tracker can be accessed via port 3000 on the following DNS name from within your cluster:
+{{ template "academic_tracker_chart.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
